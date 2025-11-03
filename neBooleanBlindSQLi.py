@@ -33,9 +33,10 @@ def SQLiAttack():
                     p2.status(nombre_db)
                     found = True
                     break
-            if not found:  # Si ningún carácter fue correcto, agregamos comodín
-                nombre_db += "#"
+            if not found: 
+                nombre_db += ""
                 p2.status(nombre_db)
+                print(f"Base de datos encontrada: {nombre_db}")  
         resultados.append(nombre_db)
         print(f"Base de datos encontrada: {nombre_db}")
 
